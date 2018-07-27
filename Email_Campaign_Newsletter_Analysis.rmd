@@ -1,0 +1,480 @@
+---
+title: "Email Campaign Newsletter Analysis"
+author: "Nik8x"
+date: "July 12, 2018"
+output: rmarkdown::github_document
+---
+Email Campaign Newsletter
+
+```{r}
+subdata <- read.csv(file.choose(), header = T, na.strings = c("NA",""," ",".")) # choose the subscribers data csv file
+```
+
+```{r}
+nrow(subdata)
+ncol(subdata)
+
+head(subdata)
+```
+
+```{r}
+summary(subdata)
+```
+
+```{r}
+str(subdata)
+```
+
+```{r}
+length(unique(subdata$Profile.Id))
+```
+We can consider each Profile.Id to be a unique Subscriber, hence in total we have 705144 subscribers
+
+Convert Signup(Date, Time) to Date, changing data type from factor to date 
+```{r}
+subdata$Date <- as.Date(subdata$Signup) # storing in a new column 'Date'
+str(subdata$Date)
+```
+
+***
+***
+
+```{r}
+# Let's break the Date column into Year
+subdata$Year <- as.numeric(format(subdata$Date, "%Y" ))
+str(subdata$Year)
+
+# install.packages('plyr')
+library(plyr)
+yearcount <- count(subdata, 'Year')
+yearcount
+```
+
+```{r}
+# Plotting above data
+
+# install.packages('ggplot2')
+library(ggplot2)
+
+ggplot(yearcount, aes(x = Year, y = freq)) + 
+  geom_bar(aes(fill = freq), stat = "identity") +
+  xlab("Year") + ylab("Number of Subscribers") + labs(title = "Number of Subscribers per Year") +
+  geom_text(aes(label = freq), vjust = -1)
+```
+We got most subscribers in the year 2016
+
+```{r}
+# Let's see referral sources
+count(subdata, 'referral_source')
+```
+
+We can see that bookbub, Bookbub; Bookpage, BookPage; bookriot, Bookriot; google, Google; facebook, Facebook, facebook.com; litbreaker, Litbreaker; 
+Pinterest, pinterest.com; The Line Up, The Line Up, The Lineup ; and twitter, Twitter are counted  separately per year, let's rename them
+```{r}
+subdata$referral_source[subdata$referral_source == 'bookbub'] <- 'Bookbub'
+subdata$referral_source[subdata$referral_source == 'Bookpage'] <- 'BookPage'
+subdata$referral_source[subdata$referral_source == 'bookriot'] <- 'Bookriot'
+subdata$referral_source[subdata$referral_source == 'google'] <- 'Google'
+subdata$referral_source[subdata$referral_source == 'facebook'] <- 'Facebook'
+subdata$referral_source[subdata$referral_source == 'facebook.com'] <- 'Facebook'
+subdata$referral_source[subdata$referral_source == 'litbreaker'] <- 'Litbreaker'
+subdata$referral_source[subdata$referral_source == 'pinterest.com'] <- 'Pinterest'
+subdata$referral_source[subdata$referral_source == 'The Line Up '] <- 'The Lineup'
+subdata$referral_source[subdata$referral_source == 'The Line Up'] <- 'The Lineup'
+subdata$referral_source[subdata$referral_source == 'twitter'] <- 'Twitter'
+```
+
+
+Count	number	of	subscribers	we	acquired	each	year	by	referral source
+```{r}
+y <- aggregate(Profile.Id ~ referral_source + Year, data = subdata, length)
+```
+
+
+```{r}
+y1 <- y[with(y,order(-Profile.Id)),]
+y1 <- y1[1:10,]
+y1
+```
+
+```{r}
+ggplot(y1, aes(x = referral_source, y = Profile.Id)) + 
+  geom_bar(aes(fill = y1$Year), stat = "identity") +
+  xlab("Source") + ylab("Number of Subscribers") + labs(title = "Number of Subscribers per Year") +
+  #geom_text(aes(label = Profile.Id), vjust = -1) +
+  theme(axis.text.x = element_text(angle = 65, vjust = 0.6))
+```
+
+
+```{r}
+# Let's break the Date column into Month
+subdata$Month <- as.factor(format(subdata$Date, "%B" ))
+```
+
+Count	number	of	subscribers	we	acquired	each	month	by	referral source
+```{r}
+z <- aggregate(Profile.Id ~ referral_source + factor(Month, levels = month.name), data = subdata, length)
+```
+
+```{r}
+z1 <- z[with(z,order(-Profile.Id)),]
+z1 <- z1[1:10,]
+z1
+```
+
+
+```{r}
+ggplot(z1, aes(x = referral_source, y = Profile.Id)) + 
+  geom_bar(aes(fill = z1$`factor(Month, levels = month.name)`), stat = "identity") +
+  xlab("Source") + ylab("Number of Subscribers") + labs(title = "Number of Subscribers per Month") +
+  #geom_text(aes(label = Profile.Id), vjust = -1) +
+  theme(axis.text.x = element_text(angle = 65, vjust = 0.6))
+```
+In the month of January, DMi gave us 43393 suscribers
+
+```{r}
+x <- aggregate(Profile.Id ~ referral_source + Year + factor(Month, levels = month.name), data = subdata, length)
+```
+
+```{r}
+x1 <- x[with(x,order(-Profile.Id)),]
+x1 <- x1[1:10,]
+x1
+```
+43233 subscribers were acquired in the month of January, 2016, via DMi.
+
+***
+***
+
+Let us create a new data frame consisting of subscriber and their preferences
+```{r}
+attach(subdata)
+subdata_ebb <- data.frame(Profile.Id, ebb_preferences)
+detach(subdata)
+```
+
+```{r}
+# Now let's remove square brackets and quotations from preferences
+
+subdata_ebb$ebb_preferences <- paste0("", gsub("[][]", "", subdata_ebb$ebb_preferences), "") # removing square brackets
+
+subdata_ebb$ebb_preferences <- paste0("", gsub('""', "", subdata_ebb$ebb_preferences), "") # removing quotations
+```
+
+```{r}
+subdata_ebb$ebb_preferences <- sapply(subdata_ebb$ebb_preferences, function(x) gsub("\"", "", x)) # remove \" from preferences 
+
+subdata_ebb$ebb_preferences <- as.character(subdata_ebb$ebb_preferences) # store this as character
+```
+
+```{r}
+# Let's see total count of preferences per subscriber
+library(stringi)
+subdata_ebb$ebb_preferences_count <- stri_count_words(subdata_ebb$ebb_preferences)
+```
+
+```{r}
+# The missing values should be replaced with maximum preferences number, let's find that
+summary(as.factor(subdata_ebb$ebb_preferences_count))
+```
+We see that most of the preferences are 14(only 2 values for 16 so we exclude it)
+
+```{r}
+# Fill empty values in preferences with 14
+subdata_ebb$ebb_preferences_count[subdata_ebb$ebb_preferences == 'NA'] <- 14
+```
+
+```{r}
+# plot above data
+
+ggplot(subdata_ebb, aes(ebb_preferences_count)) +
+  geom_histogram() +
+  xlab("Preferences") + ylab("Number of Subscribers") + labs(title = "Number of Subscribers")
+```
+Most subscribers are subscribing to all 14 preferences. It might be because most people prefer default selection.
+
+***
+***
+
+```{r}
+# Let's store preferences into a list
+preferences <- strsplit(subdata_ebb$ebb_preferences, split = ",", fixed = TRUE)
+# head(preferences)
+
+preferences_unlist <- unlist(preferences)
+# head(preferences_unlist, 10)
+
+unique(preferences_unlist)
+```
+
+
+We have repetitions here, Let us write down the above list without repetitions and significant preferences
+bestsellers
+mysteries_thrillers_true_crime
+science_fiction_fantasy
+literary_fiction
+general_nonfiction
+book_club_picks
+historical_fiction
+romance 
+young_adult
+biographies_and_memoir
+lifestyle_and_cooking
+childrens
+history
+poetry
+
+
+We can also see that there are characters y, g, s, p, r, c which in themself do not signify any preference, so we check and drop them
+```{r}
+which(preferences_unlist == "y")
+which(preferences_unlist == "g")
+which(preferences_unlist == "s")
+which(preferences_unlist == "p")
+which(preferences_unlist == "r")
+which(preferences_unlist == "c")
+```
+There are not a whole lot of them, so we will notinclude them
+
+Let us match the pattern in preferences and encode them into binary columns
+```{r}
+subdata_ebb$bestsellers <- ifelse(grepl("bestsellers", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$mysteries <- ifelse(grepl("mysteries", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$science_fiction <- ifelse(grepl("sc", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$lit_fiction <- ifelse(grepl("literary_fic", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$general_nonfiction <- ifelse(grepl("ge", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$book_club_picks <- ifelse(grepl("book_club_picks", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$historical_fiction <- ifelse(grepl("hist", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$romance <- ifelse(grepl("ro", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$young_adult <- ifelse(grepl("yo", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$bio_memoirs <- ifelse(grepl("bio", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$lifestyle_cooking<- ifelse(grepl("life", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$childrens <- ifelse(grepl("ch", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$history<- ifelse(grepl("history", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+subdata_ebb$poetry <- ifelse(grepl("po", subdata_ebb$ebb_preferences, fixed = TRUE),1,0)
+```
+
+```{r}
+head(subdata_ebb)
+```
+
+***
+
+### Predictive Model
+
+Let us prepare our data
+Let's again look at all the columns we got
+```{r}
+colnames(subdata)
+colnames(subdata_ebb)
+```
+Domain and Engagement are irrelevant; Geolocation, Age, Gender, TopDevice, referral source have too many missing values, so we will not consider them
+
+For predicting when people willl opt-out of the newsletter we will only be needing significant and related variables. Let's create a new dataframe and store all the significant columns which we are going to consider for prediction
+```{r}
+attach(subdata)
+optoutprediction <- data.frame(subdata_ebb, Year, Date, Opens, Clicks, Lifetime.Message, Signup, Last.Open, Optout.Time)
+detach(subdata)
+```
+
+Let's look at the amount of data missing in Optout Time
+```{r}
+sum(is.na(optoutprediction$Optout.Time))
+```
+We will drop these rows
+
+```{r}
+optoutprediction <- optoutprediction[!is.na(optoutprediction$Optout.Time), ]
+```
+
+```{r}
+nrow(optoutprediction)
+```
+We are left with 186088 rows only
+
+```{r}
+optoutprediction$optoutduration <- difftime(optoutprediction$Optout.Time ,optoutprediction$Signup , units = c("days"))
+optoutprediction$activeduration <- difftime(optoutprediction$Last.Open ,optoutprediction$Signup , units = c("days"))
+```
+
+```{r}
+max(optoutprediction$optoutduration)
+```
+
+Also convert date into month
+```{r}
+optoutprediction$Month <- as.factor(format(optoutprediction$Date, "%m" ))
+```
+
+ebb_preferences, Date, Signup, Last.Open, Optout.Time is irrelevant, we will drop it
+```{r}
+optoutprediction$ebb_preferences <- NULL
+optoutprediction$Date <- NULL
+optoutprediction$Signup <- NULL
+optoutprediction$Last.Open <- NULL
+optoutprediction$Optout.Time <- NULL
+```
+
+Let's look at the structure of our new dataset
+```{r}
+str(optoutprediction)
+```
+Looks like we have to convert some of the data types
+
+```{r}
+optoutprediction$bestsellers <- as.factor(optoutprediction$bestsellers)
+optoutprediction$mysteries <- as.factor(optoutprediction$mysteries)
+optoutprediction$science_fiction <- as.factor(optoutprediction$science_fiction)
+optoutprediction$lit_fiction <- as.factor(optoutprediction$lit_fiction)
+optoutprediction$general_nonfiction <- as.factor(optoutprediction$general_nonfiction)
+optoutprediction$book_club_picks <- as.factor(optoutprediction$book_club_picks)
+optoutprediction$historical_fiction <- as.factor(optoutprediction$historical_fiction)
+optoutprediction$romance <- as.factor(optoutprediction$romance)
+optoutprediction$young_adult <- as.factor(optoutprediction$young_adult)
+optoutprediction$bio_memoirs <- as.factor(optoutprediction$bio_memoirs)
+optoutprediction$lifestyle_cooking <- as.factor(optoutprediction$lifestyle_cooking)
+optoutprediction$childrens <- as.factor(optoutprediction$childrens)
+optoutprediction$history<- as.factor(optoutprediction$history)
+optoutprediction$poetry <- as.factor(optoutprediction$poetry)
+optoutprediction$Year <- as.factor(optoutprediction$Year)
+optoutprediction$optoutduration <- as.numeric(optoutprediction$optoutduration)
+optoutprediction$activeduration <- as.numeric(optoutprediction$activeduration)
+```
+
+Let's look again
+```{r}
+str(optoutprediction)
+```
+
+Before applying any model, let's check for missing values
+```{r}
+summary(optoutprediction)
+```
+optoutduration and activeduration have negative values which we will make positive, and activeduration has missing values
+
+```{r}
+optoutprediction$optoutduration <- abs(optoutprediction$optoutduration)
+optoutprediction$activeduration <- abs(optoutprediction$activeduration)
+```
+
+```{r}
+summary(optoutprediction$activeduration)
+```
+These missing values can be replace by median
+
+```{r}
+optoutprediction$activeduration[is.na(optoutprediction$activeduration)] <- median(optoutprediction$activeduration, na.rm = TRUE)
+```
+
+```{r}
+summary(optoutprediction$activeduration) # Now it' good
+```
+
+#### Prediction
+
+```{r}
+label <- optoutprediction$optoutduration # our variable for prediction
+```
+
+```{r}
+set.seed(1234)
+oneortwo <- sample(1:2 , length(optoutprediction$Profile.Id), replace = TRUE, prob=c(0.8, 0.2)) # generating random values and storing them
+```
+
+```{r}
+# create train data frame
+train <- optoutprediction[oneortwo == 1, ]
+
+# create test data frame
+test <- optoutprediction[oneortwo == 2, ]
+```
+
+##### Let's apply Linear Regression model
+```{r}
+lm_fit <- step(lm(optoutduration ~. -Profile.Id, data = train), direction = "both")
+```
+
+```{r}
+summary(lm_fit)
+```
+Adjusted R-squared:  0.9471 which is really good, and nearly all our variables are significant
+
+
+We will now apply the prediction model to the test data.
+```{r}
+predictedvalues <- predict(lm_fit, newdata = test)
+```
+
+Now, let’s look at the first few values of prediction, and compare it to the values of optoutduration in the test data set
+```{r}
+head(predictedvalues)
+```
+
+```{r}
+head(test$optoutduration)
+```
+
+This means that for the value of 500.028148, our prediction was 462.27999, for 568.744468, it was 639.89648, for 44.306655, it was 52.19734 and so on.
+
+Baseline model
+```{r}
+bestguess <- median(train$optoutduration) 
+```
+
+```{r}
+RMSE.baseline <- sqrt(median((bestguess - train$optoutduration) ^ 2))
+RMSE.baseline
+```
+
+
+Evaluate the accuracy
+```{r}
+RMSE.predictedvalues <- sqrt(mean((predictedvalues - test$optoutduration) ^ 2))
+RMSE.predictedvalues
+```
+
+Apparently our's is good model but can be a lot better
+
+##### Decision Tree
+```{r}
+# Needed to grow a tree
+library(rpart)
+#To draw a pretty tree 
+library(rattle)
+```
+
+
+```{r}
+rt <- rpart(optoutduration ~ . , data = train[-1], method = "anova")
+```
+
+```{r}
+# Examine life_predicted_2
+plot(rt)
+text(rt)
+```
+
+```{r}
+fancyRpartPlot(rt) # This gives better plot
+```
+
+```{r}
+predicted_dt <- predict(rt,test)
+```
+
+Now, let’s look at the first few values of prediction, and compare it to the values of optoutduration in the test data set
+```{r}
+head(predicted_dt)
+```
+
+```{r}
+head(test$optoutduration)
+```
+
+Evaluate the accuracy
+```{r}
+RMSE.predicted_dt <- sqrt(mean((predicted_dt - test$optoutduration) ^ 2))
+RMSE.predicted_dt
+```
+
+##### I think it would be better to build a classification model by classifying optoutduration variable in Quarter monthly duration.
