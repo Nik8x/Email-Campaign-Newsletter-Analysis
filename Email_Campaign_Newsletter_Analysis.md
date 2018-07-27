@@ -226,7 +226,7 @@ ggplot(yearcount, aes(x = Year, y = freq)) +
   geom_text(aes(label = freq), vjust = -1)
 ```
 
-![](did_afterwards_but_not_submitted_orim_subdata_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-8-1.png) We got most subscribers in the year 2016
+![](Email_Campaign_Newsletter_Analysis_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-8-1.png) We got most subscribers in the year 2016
 
 ``` r
 # Let's see referral sources
@@ -359,7 +359,7 @@ ggplot(y1, aes(x = referral_source, y = Profile.Id)) +
   theme(axis.text.x = element_text(angle = 65, vjust = 0.6))
 ```
 
-![](did_afterwards_but_not_submitted_orim_subdata_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-1.png)
+![](Email_Campaign_Newsletter_Analysis_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-13-1.png)
 
 ``` r
 # Let's break the Date column into Month
@@ -398,7 +398,7 @@ ggplot(z1, aes(x = referral_source, y = Profile.Id)) +
   theme(axis.text.x = element_text(angle = 65, vjust = 0.6))
 ```
 
-![](did_afterwards_but_not_submitted_orim_subdata_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-17-1.png) In the month of January, DMi gave us 43393 suscribers
+![](Email_Campaign_Newsletter_Analysis_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-17-1.png) In the month of January, DMi gave us 43393 suscribers
 
 ``` r
 x <- aggregate(Profile.Id ~ referral_source + Year + factor(Month, levels = month.name), data = subdata, length)
@@ -483,7 +483,7 @@ ggplot(subdata_ebb, aes(ebb_preferences_count)) +
 
     ## `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 
-![](did_afterwards_but_not_submitted_orim_subdata_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-26-1.png) Most subscribers are subscribing to all 14 preferences. It might be because most people prefer default selection.
+![](Email_Campaign_Newsletter_Analysis_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-26-1.png) Most subscribers are subscribing to all 14 preferences. It might be because most people prefer default selection.
 
 ------------------------------------------------------------------------
 
@@ -1424,13 +1424,13 @@ plot(rt)
 text(rt)
 ```
 
-![](did_afterwards_but_not_submitted_orim_subdata_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-61-1.png)
+![](Email_Campaign_Newsletter_Analysis_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-61-1.png)
 
 ``` r
 fancyRpartPlot(rt) # This gives better plot
 ```
 
-![](did_afterwards_but_not_submitted_orim_subdata_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-62-1.png)
+![](Email_Campaign_Newsletter_Analysis_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-62-1.png)
 
 ``` r
 predicted_dt <- predict(rt,test)
