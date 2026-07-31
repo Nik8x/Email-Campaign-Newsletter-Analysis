@@ -1,0 +1,6 @@
+{
+  "best_k": 2,
+  "silhouette_score": 0.3501754998966032,
+  "highest_response_cluster_pct": 20.976116303219104,
+  "lowest_response_cluster_pct": 10.45490822027135
+}

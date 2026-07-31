@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Email Campaign Analysis</title>
+<meta name="description" content="Campaign-response classification and customer-segmentation clustering on a marketing campaign dataset.">
+<style>
+:root {
+  color-scheme: light;
+  --bg:            #fcfcfb;
+  --surface:       #ffffff;
+  --surface-2:     #f2f1ed;
+  --border:        #e3e2dc;
+  --text-primary:  #0b0b0b;
+  --text-secondary:#52514e;
+  --text-muted:    #7a7972;
+  --series-1:      #2a78d6;
+  --series-2:      #eb6834;
+  --series-3:      #1baf7a;
+  --series-4:      #eda100;
+  --good:          #0ca30c;
+  --critical:      #d03b3b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --bg:            #131311;
+    --surface:       #1a1a19;
+    --surface-2:     #212120;
+    --border:        #34332f;
+    --text-primary:  #f5f4f0;
+    --text-secondary:#c3c2b7;
+    --text-muted:    #8f8e86;
+    --series-1:      #3987e5;
+    --series-2:      #d95926;
+    --series-3:      #199e70;
+    --series-4:      #c98500;
+    --good:          #3ecf3e;
+    --critical:      #e66767;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:            #131311;
+  --surface:       #1a1a19;
+  --surface-2:     #212120;
+  --border:        #34332f;
+  --text-primary:  #f5f4f0;
+  --text-secondary:#c3c2b7;
+  --text-muted:    #8f8e86;
+  --series-1:      #3987e5;
+  --series-2:      #d95926;
+  --series-3:      #199e70;
+  --series-4:      #c98500;
+  --good:          #3ecf3e;
+  --critical:      #e66767;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.55;
+}
+main { max-width: 920px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+header.hero { margin-bottom: 2.5rem; }
+.eyebrow {
+  color: var(--series-1);
+  font-weight: 600;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0 0 0.6rem;
+}
+h1 { font-size: 1.9rem; margin: 0 0 0.5rem; letter-spacing: -0.01em; }
+.lede { color: var(--text-secondary); font-size: 1.05rem; max-width: 68ch; }
+.repo-link { color: var(--text-muted); font-size: 0.88rem; }
+.repo-link a { color: inherit; }
+section { margin: 3rem 0; }
+h2 {
+  font-size: 1.3rem;
+  margin: 0 0 0.3rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+p { color: var(--text-secondary); }
+p.section-intro { margin-top: 0.8rem; }
+figure { margin: 1.2rem 0; }
+figure img {
+  max-width: 100%;
+  display: block;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+figcaption { font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem; }
+.fig-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+@media (max-width: 640px) { .fig-row { grid-template-columns: 1fr; } }
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 1.2rem;
+}
+.stat { background: var(--surface); padding: 1rem; }
+.stat .num { font-size: 1.5rem; font-weight: 600; }
+.stat .label { font-size: 0.78rem; color: var(--text-muted); }
+.nav-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.nb-card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease;
+}
+.nb-card:hover { border-color: var(--series-1); }
+.nb-num {
+  display: inline-block;
+  color: var(--series-1);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+.nb-card h3 { margin: 0 0 0.3rem; font-size: 1rem; }
+.nb-card p { margin: 0; font-size: 0.88rem; }
+table { border-collapse: collapse; width: 100%; font-size: 0.88rem; margin: 1rem 0; }
+th, td { text-align: left; padding: 0.45rem 0.7rem; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.02em; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+code { background: var(--surface-2); border-radius: 4px; padding: 0.1rem 0.35rem; font-size: 0.9em; }
+.callout {
+  background: var(--surface-2);
+  border-left: 3px solid var(--series-1);
+  border-radius: 6px;
+  padding: 0.9rem 1.1rem;
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin: 1.2rem 0;
+}
+ul.findings { padding-left: 1.2rem; }
+ul.findings li { margin-bottom: 0.8rem; color: var(--text-secondary); }
+ul.findings strong { color: var(--text-primary); }
+ul.future { padding-left: 1.2rem; }
+ul.future li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+footer {
+  margin-top: 3.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+a { color: var(--series-1); }
+</style>
+</head>
+<body>
+<main>
+
+<header class="hero">
+  <p class="eyebrow">Data Science Project &middot; Customer Personality Analysis Dataset</p>
+  <h1>Email Campaign Analysis</h1>
+  <p class="lede">
+    2,240 customers, predicting response to a marketing campaign and
+    segmenting customers by spending/engagement pattern. An earlier
+    version of this project reached for a classification model in its
+    final sentence and stopped there - this rebuild builds it, plus the
+    customer-segmentation view the project's name implied but never delivered.
+  </p>
+  <p class="repo-link">Source notebooks: <a href="https://github.com/Nik8x/Email-Campaign-Newsletter-Analysis">github.com/Nik8x/Email-Campaign-Newsletter-Analysis</a></p>
+</header>
+
+<section id="data">
+  <h2>The dataset at a glance</h2>
+  <div class="stat-grid">
+    <div class="stat"><div class="num">2,216</div><div class="label">Customers</div></div>
+    <div class="stat"><div class="num">15.0%</div><div class="label">Campaign response rate</div></div>
+    <div class="stat"><div class="num">0.521</div><div class="label">Test PR-AUC</div></div>
+    <div class="stat"><div class="num">0.858</div><div class="label">Test ROC-AUC</div></div>
+    <div class="stat"><div class="num">$52.2K</div><div class="label">Mean income</div></div>
+    <div class="stat"><div class="num">0.9%</div><div class="label">Complaint rate</div></div>
+  </div>
+  <figure>
+    <img src="assets/eda_overview.png" alt="Age, income, spend by category, and education distributions">
+    <figcaption>Age, income, spend by category, and education distributions.</figcaption>
+  </figure>
+  <figure>
+    <img src="assets/response_by_education.png" alt="Campaign response rate by education level">
+    <figcaption>Campaign response rate by education level.</figcaption>
+  </figure>
+</section>
+
+<section id="stats">
+  <h2>Statistical testing</h2>
+  <table>
+    <thead><tr><th>Test</th><th>Result</th><th class="num">p-value</th></tr></thead>
+    <tbody>
+      <tr><td>Pearson correlation, income vs total spend</td><td>r = 0.668</td><td class="num">&lt; 1&times;10<sup>-285</sup></td></tr>
+      <tr><td>ANOVA, response rate across education levels</td><td>F = 5.84</td><td class="num">1.1&times;10<sup>-4</sup></td></tr>
+      <tr><td>Chi-square, has kids at home &times; response</td><td>&chi;&sup2; = 11.13</td><td class="num">8.5&times;10<sup>-4</sup></td></tr>
+    </tbody>
+  </table>
+  <p>Income and spending are strongly linked. Education shows a real, if
+     modest, association with response - PhD holders respond at 21.0% vs
+     3.7% for customers with only a Basic education. Having kids at home
+     is associated with a significantly <em>lower</em> response rate
+     (12.0% vs 17.2%), consistent with these campaigns skewing toward
+     discretionary spending.</p>
+</section>
+
+<section id="modeling">
+  <h2>Predicting campaign response</h2>
+  <figure>
+    <img src="assets/feature_selection.png" alt="Mutual information and Random Forest importance for predicting campaign response">
+    <figcaption>Mutual information and Random Forest importance.</figcaption>
+  </figure>
+  <div class="callout">
+    <strong>The two methods don't fully agree</strong>: <code>TotalSpend</code>
+    and <code>Income</code> rank high by both, but <code>Recency</code>
+    (Random Forest's #2 feature) and <code>NumCatalogPurchases</code>
+    (mutual information's #3) trade places between the two - the same
+    pattern seen in the Framingham Heart Study rebuild earlier in this
+    series. <code>Education</code> ranks well down the list in both,
+    despite being statistically significant above - a reminder that
+    "significant" and "strongly predictive" aren't the same claim.
+  </div>
+  <figure>
+    <img src="assets/cv_model_comparison.png" alt="Boxplot of cross-validated PR-AUC by model">
+    <figcaption>5-fold CV PR-AUC &mdash; Random Forest wins.</figcaption>
+  </figure>
+  <table>
+    <thead><tr><th>Model</th><th class="num">CV PR-AUC</th></tr></thead>
+    <tbody>
+      <tr><td>Random-guess baseline (positive rate)</td><td class="num">0.150</td></tr>
+      <tr><td>Logistic Regression (balanced)</td><td class="num">0.465</td></tr>
+      <tr><td>Gradient Boosting</td><td class="num">0.542</td></tr>
+      <tr><td><strong>Random Forest (balanced)</strong></td><td class="num"><strong>0.573</strong></td></tr>
+    </tbody>
+  </table>
+  <figure>
+    <img src="assets/model_evaluation.png" alt="Confusion matrix, ROC curve, and precision-recall curve">
+    <figcaption>Test-set confusion matrix, ROC curve, and precision-recall curve.</figcaption>
+  </figure>
+  <p><strong>Test PR-AUC 0.521, ROC-AUC 0.858</strong> against a 15.0%
+     baseline positive rate - the classification model an earlier version
+     of this project reached for in its final sentence but never built.</p>
+</section>
+
+<section id="clustering">
+  <h2>Unsupervised: customer segmentation</h2>
+  <div class="fig-row">
+    <figure>
+      <img src="assets/cluster_elbow_silhouette.png" alt="Elbow method and silhouette score for choosing k">
+      <figcaption>Elbow + silhouette score, best k = 2.</figcaption>
+    </figure>
+    <figure>
+      <img src="assets/cluster_pca.png" alt="PCA scatter colored by cluster and by campaign response">
+      <figcaption>PCA view, colored by cluster (left) and by actual campaign response (right).</figcaption>
+    </figure>
+  </div>
+  <div class="callout">
+    <strong>Segments found with zero response information line up with a
+    real response-rate gradient.</strong> The highest-spend, most-engaged
+    segment responds at <strong>21.0%</strong> vs <strong>10.5%</strong>
+    for the lowest-spend segment - customer value and campaign
+    responsiveness turn out to be much the same axis in this data.
+  </div>
+</section>
+
+<section id="notebooks">
+  <h2>Notebooks</h2>
+  <div class="nav-grid">
+    <a class="nb-card" href="00_data_setup_eda.html">
+      <span class="nb-num">00 &middot; DATA + EDA</span>
+      <h3>Data Setup and EDA</h3>
+      <p>Downloads and cleans the data, demographic and spending distributions.</p>
+    </a>
+    <a class="nb-card" href="01_statistical_testing.html">
+      <span class="nb-num">01 &middot; STATISTICS</span>
+      <h3>Statistical Testing</h3>
+      <p>Income vs spend, education vs response, kids-at-home vs response.</p>
+    </a>
+    <a class="nb-card" href="02_feature_engineering_selection.html">
+      <span class="nb-num">02 &middot; FEATURES</span>
+      <h3>Feature Engineering &amp; Selection</h3>
+      <p>Mutual information and Random Forest importance for campaign response.</p>
+    </a>
+    <a class="nb-card" href="03_model_training_evaluation.html">
+      <span class="nb-num">03 &middot; MODELING</span>
+      <h3>Model Training &amp; Evaluation</h3>
+      <p>Class-weighted models, evaluated with PR-AUC and ROC-AUC.</p>
+    </a>
+    <a class="nb-card" href="04_clustering.html">
+      <span class="nb-num">04 &middot; CLUSTERING</span>
+      <h3>Unsupervised Segmentation</h3>
+      <p>KMeans customer segments, checked against real response only afterward.</p>
+    </a>
+  </div>
+</section>
+
+<section id="findings">
+  <h2>Key findings</h2>
+  <ul class="findings">
+    <li><strong>Income and spending are strongly linked</strong> (r = 0.668, p &asymp; 0) &mdash; the highest-income customers spend meaningfully more across every product category.</li>
+    <li><strong>Education has a real, if modest, association with response</strong> (p = 0.0001) &mdash; PhD holders respond at 21.0% vs 3.7% for Basic education. Kids at home is associated with a significantly <em>lower</em> response rate.</li>
+    <li><strong>A properly working classifier reaches real performance</strong> &mdash; test PR-AUC 0.521 (ROC-AUC 0.858) against a 15.0% baseline, the model an earlier version of this project never built.</li>
+    <li><strong>Mutual information and Random Forest importance don't fully agree</strong> on which features matter most, mirroring the same pattern found in the Framingham Heart Study rebuild.</li>
+    <li><strong>Customer segments found with zero response information line up with a real response-rate gradient</strong> &mdash; 21.0% vs 10.5% between the highest- and lowest-engagement segments.</li>
+  </ul>
+</section>
+
+<section id="future">
+  <h2>Future work</h2>
+  <ul class="future">
+    <li>Model each of the 5 individual campaigns (AcceptedCmp1-5) separately, to see whether responsiveness drifts over time.</li>
+    <li>A proper RFM (recency/frequency/monetary) feature set, formalizing what the current features only approximate.</li>
+    <li>Investigate the rare <code>Complain</code> flag (0.9%) as a separate target, likely needing dedicated rare-event handling.</li>
+  </ul>
+</section>
+
+<footer>
+  Data: <a href="https://github.com/Abdulraqib20/Customer-Personality-Analysis">Customer Personality Analysis dataset</a>, downloaded at notebook run-time — not committed to this repository.
+  Report generated from the project's Jupyter notebooks with <code>nbconvert</code>.
+</footer>
+
+</main>
+</body>
+</html>

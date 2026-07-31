@@ -1,0 +1,15 @@
+{
+  "income_spend_r": 0.667576090388828,
+  "income_spend_p": 5.843958806410119e-286,
+  "education_response_F": 5.835583440494266,
+  "education_response_p": 0.00011388415491246321,
+  "kids_response_chi2": 11.126229666323527,
+  "kids_response_p": 0.0008511542957802852,
+  "response_rate_by_education": {
+    "2n Cycle": 0.11,
+    "Basic": 0.037037037037037035,
+    "Graduation": 0.13620071684587814,
+    "Master": 0.15342465753424658,
+    "PhD": 0.20997920997921
+  }
+}

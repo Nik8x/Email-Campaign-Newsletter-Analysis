@@ -1,0 +1,11 @@
+{
+  "best_model": "Random Forest (balanced)",
+  "cv_pr_auc_mean": {
+    "Logistic Regression (balanced)": 0.46465623979903076,
+    "Random Forest (balanced)": 0.5726866682638396,
+    "Gradient Boosting": 0.542377858837974
+  },
+  "test_pr_auc": 0.5205323827269572,
+  "test_roc_auc": 0.8581843296753894,
+  "test_positive_rate": 0.14981949458483754
+}

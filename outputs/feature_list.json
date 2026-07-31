@@ -1,0 +1,15 @@
+[
+  "Age",
+  "Income",
+  "Kidhome",
+  "Teenhome",
+  "Recency",
+  "TotalSpend",
+  "NumDealsPurchases",
+  "NumWebPurchases",
+  "NumCatalogPurchases",
+  "NumStorePurchases",
+  "NumWebVisitsMonth",
+  "Education_enc",
+  "Marital_enc"
+]
