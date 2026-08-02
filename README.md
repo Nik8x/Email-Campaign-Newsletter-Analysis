@@ -1,20 +1,17 @@
 # Email Campaign Analysis
 
-2,240 customers from a marketing campaign dataset — demographics,
+2,240 customers from a marketing campaign dataset: demographics,
 spending by category, purchase channel mix, and whether they responded
-to the most recent campaign. This project builds the two things an
-earlier version reached for but never delivered: a real classification
-model predicting campaign response (the earlier version ended
-mid-sentence saying "it would be better to build a classification
-model" and stopped there), and a customer-segmentation view using
-unsupervised clustering.
+to the most recent campaign. The analysis covers a real classification
+model predicting campaign response, plus a customer-segmentation view
+built with unsupervised clustering.
 
 **Live report:** https://nik8x.github.io/Email-Campaign-Newsletter-Analysis/
 
 ## Data
 
 The [Customer Personality Analysis](https://github.com/Abdulraqib20/Customer-Personality-Analysis)
-dataset (2,240 customers). Not committed to this repo —
+dataset (2,240 customers). Not committed to this repo,
 `00_data_setup_eda.ipynb` downloads it automatically on first run (~220KB).
 
 ## Notebooks
@@ -27,7 +24,7 @@ dataset (2,240 customers). Not committed to this repo —
 | `03_model_training_evaluation.ipynb` | Class-weighted Logistic Regression vs Random Forest vs Gradient Boosting, evaluated with PR-AUC/ROC-AUC. |
 | `04_clustering.ipynb` | KMeans customer segmentation, checked against real campaign response only afterward. |
 
-Run them in order (00 → 04) — each stage loads the previous stage's saved
+Run them in order (00 to 04), each stage loads the previous stage's saved
 results from `outputs/`.
 
 ## Setup
@@ -41,26 +38,25 @@ jupyter notebook
 
 ## Key findings
 
-- **Income and spending are strongly linked** (r = 0.668, p ≈ 0) — the
+- **Income and spending are strongly linked** (r = 0.668, p ~ 0), the
   highest-income customers spend meaningfully more across every product
   category.
 - **Education has a real, if modest, association with campaign
-  response** (p = 0.0001) — PhD holders respond at 21.0% vs 3.7% for
+  response** (p = 0.0001): PhD holders respond at 21.0% vs 3.7% for
   customers with only a Basic education. Having kids at home is
   associated with a significantly *lower* response rate (12.0% vs 17.2%),
   consistent with these campaigns skewing toward discretionary spending.
-- **A properly working classifier reaches real performance**: test
-  PR-AUC 0.521 (ROC-AUC 0.858) against a 15.0% baseline positive rate —
-  the classification model an earlier version of this project reached
-  for in its final sentence but never built.
+- **A class-weighted classifier reaches real performance on a hard,
+  imbalanced target**: test PR-AUC 0.521 (ROC-AUC 0.858) against a 15.0%
+  baseline positive rate.
 - **Mutual information and Random Forest importance don't fully agree**
-  on which features matter most — `TotalSpend` and `Income` rank high by
+  on which features matter most. `TotalSpend` and `Income` rank high by
   both, but `Recency` (Random Forest's #2 feature) and
   `NumCatalogPurchases` (mutual information's #3) trade places between
-  the two methods, the same pattern seen in the Framingham Heart Study
-  rebuild earlier in this series.
+  the two methods, since the two approaches measure genuinely different
+  things.
 - **Customer segments found with zero response information line up with
-  a real response-rate gradient** — the highest-spend, most-engaged
+  a real response-rate gradient.** The highest-spend, most-engaged
   segment responds at 21.0% vs 10.5% for the lowest-spend segment.
 
 ## Future work
@@ -72,7 +68,7 @@ jupyter notebook
 - A proper RFM (recency/frequency/monetary) feature set, since the
   current features approximate but don't fully build that framework.
 - Investigate the `Complain` flag (0.9% of customers) as a separate,
-  rare-event target — likely needs a dedicated imbalance-handling
+  rare-event target, likely needing a dedicated imbalance-handling
   approach given how much rarer it is than campaign non-response.
 
 Full detail, code, and every number above are in the notebooks and the

@@ -174,10 +174,8 @@ a { color: var(--series-1); }
   <h1>Email Campaign Analysis</h1>
   <p class="lede">
     2,240 customers, predicting response to a marketing campaign and
-    segmenting customers by spending/engagement pattern. An earlier
-    version of this project reached for a classification model in its
-    final sentence and stopped there - this rebuild builds it, plus the
-    customer-segmentation view the project's name implied but never delivered.
+    segmenting customers by spending and engagement pattern, using a
+    real classification model plus unsupervised clustering.
   </p>
   <p class="repo-link">Source notebooks: <a href="https://github.com/Nik8x/Email-Campaign-Newsletter-Analysis">github.com/Nik8x/Email-Campaign-Newsletter-Analysis</a></p>
 </header>
@@ -230,15 +228,15 @@ a { color: var(--series-1); }
     <strong>The two methods don't fully agree</strong>: <code>TotalSpend</code>
     and <code>Income</code> rank high by both, but <code>Recency</code>
     (Random Forest's #2 feature) and <code>NumCatalogPurchases</code>
-    (mutual information's #3) trade places between the two - the same
-    pattern seen in the Framingham Heart Study rebuild earlier in this
-    series. <code>Education</code> ranks well down the list in both,
-    despite being statistically significant above - a reminder that
-    "significant" and "strongly predictive" aren't the same claim.
+    (mutual information's #3) trade places between the two, since the
+    methods measure genuinely different things. <code>Education</code>
+    ranks well down the list in both, despite being statistically
+    significant above, a reminder that "significant" and "strongly
+    predictive" aren't the same claim.
   </div>
   <figure>
     <img src="assets/cv_model_comparison.png" alt="Boxplot of cross-validated PR-AUC by model">
-    <figcaption>5-fold CV PR-AUC &mdash; Random Forest wins.</figcaption>
+    <figcaption>5-fold CV PR-AUC, Random Forest wins.</figcaption>
   </figure>
   <table>
     <thead><tr><th>Model</th><th class="num">CV PR-AUC</th></tr></thead>
@@ -254,8 +252,8 @@ a { color: var(--series-1); }
     <figcaption>Test-set confusion matrix, ROC curve, and precision-recall curve.</figcaption>
   </figure>
   <p><strong>Test PR-AUC 0.521, ROC-AUC 0.858</strong> against a 15.0%
-     baseline positive rate - the classification model an earlier version
-     of this project reached for in its final sentence but never built.</p>
+     baseline positive rate, real performance on a hard, imbalanced
+     target.</p>
 </section>
 
 <section id="clustering">
@@ -274,7 +272,7 @@ a { color: var(--series-1); }
     <strong>Segments found with zero response information line up with a
     real response-rate gradient.</strong> The highest-spend, most-engaged
     segment responds at <strong>21.0%</strong> vs <strong>10.5%</strong>
-    for the lowest-spend segment - customer value and campaign
+    for the lowest-spend segment, customer value and campaign
     responsiveness turn out to be much the same axis in this data.
   </div>
 </section>
@@ -313,11 +311,11 @@ a { color: var(--series-1); }
 <section id="findings">
   <h2>Key findings</h2>
   <ul class="findings">
-    <li><strong>Income and spending are strongly linked</strong> (r = 0.668, p &asymp; 0) &mdash; the highest-income customers spend meaningfully more across every product category.</li>
-    <li><strong>Education has a real, if modest, association with response</strong> (p = 0.0001) &mdash; PhD holders respond at 21.0% vs 3.7% for Basic education. Kids at home is associated with a significantly <em>lower</em> response rate.</li>
-    <li><strong>A properly working classifier reaches real performance</strong> &mdash; test PR-AUC 0.521 (ROC-AUC 0.858) against a 15.0% baseline, the model an earlier version of this project never built.</li>
-    <li><strong>Mutual information and Random Forest importance don't fully agree</strong> on which features matter most, mirroring the same pattern found in the Framingham Heart Study rebuild.</li>
-    <li><strong>Customer segments found with zero response information line up with a real response-rate gradient</strong> &mdash; 21.0% vs 10.5% between the highest- and lowest-engagement segments.</li>
+    <li><strong>Income and spending are strongly linked</strong> (r = 0.668, p &asymp; 0), the highest-income customers spend meaningfully more across every product category.</li>
+    <li><strong>Education has a real, if modest, association with response</strong> (p = 0.0001): PhD holders respond at 21.0% vs 3.7% for Basic education. Kids at home is associated with a significantly <em>lower</em> response rate.</li>
+    <li><strong>A class-weighted classifier reaches real performance on a hard, imbalanced target</strong>: test PR-AUC 0.521 (ROC-AUC 0.858) against a 15.0% baseline.</li>
+    <li><strong>Mutual information and Random Forest importance don't fully agree</strong> on which features matter most, since the two methods measure genuinely different things.</li>
+    <li><strong>Customer segments found with zero response information line up with a real response-rate gradient</strong>: 21.0% vs 10.5% between the highest- and lowest-engagement segments.</li>
   </ul>
 </section>
 
@@ -331,7 +329,7 @@ a { color: var(--series-1); }
 </section>
 
 <footer>
-  Data: <a href="https://github.com/Abdulraqib20/Customer-Personality-Analysis">Customer Personality Analysis dataset</a>, downloaded at notebook run-time — not committed to this repository.
+  Data: <a href="https://github.com/Abdulraqib20/Customer-Personality-Analysis">Customer Personality Analysis dataset</a>, downloaded at notebook run-time, not committed to this repository.
   Report generated from the project's Jupyter notebooks with <code>nbconvert</code>.
 </footer>
 
